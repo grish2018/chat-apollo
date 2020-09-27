@@ -10,7 +10,7 @@
         v-model="email"
         :placeholder="currentUser.email"
       />
-      <div><p v-if="emaildNotValid">The email field is required</p></div>
+      <div><p v-if="emailNotValid">The email field is required</p></div>
       <input
         @blur="nameValidation"
         @input="validationTrue"
@@ -27,6 +27,7 @@
 
 <script>
 import gql from "graphql-tag";
+import { mapMutations } from "vuex";
 export default {
   name: "EditProfile",
   data() {
@@ -35,7 +36,7 @@ export default {
       email: "",
       name: "",
       nameNotValid: false,
-      emaildNotValid: false,
+      emailNotValid: false,
     };
   },
   apollo: {
@@ -49,6 +50,7 @@ export default {
     `,
   },
   methods: {
+    ...mapMutations(["editedUser"]),
     editProfile() {
       this.$apollo
         .mutate({
@@ -70,6 +72,7 @@ export default {
         })
         .then((data) => {
           console.log(data);
+          this.editedUser(data);
           this.$router.push({ name: "profile" });
         })
         .catch((error) => {
@@ -79,7 +82,7 @@ export default {
 
     validationTrue() {
       this.nameNotValid = false;
-      this.emaildNotValid = false;
+      this.emailNotValid = false;
     },
     nameValidation() {
       if (!this.name.trim()) {
@@ -90,7 +93,7 @@ export default {
     },
     emailValidation() {
       if (!this.email.trim()) {
-        this.emaildNotValid = true;
+        this.emailNotValid = true;
       } else {
         this.emailNotValid = false;
       }
@@ -112,13 +115,16 @@ form {
 }
 form input,
 form div {
+  outline: none;
   width: 100%;
-  height: 9%;
+  height: 10%;
   box-sizing: border-box;
+  border-radius: 9px;
 }
 form input[type="submit"] {
   background: rgb(53, 53, 131);
   font-size: 20px;
+  color: white;
 }
 form p {
   color: red;

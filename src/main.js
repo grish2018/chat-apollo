@@ -29,8 +29,8 @@ router.beforeEach((to, from, next) => {
 });
 
 new Vue({
+  apolloProvider: createProvider(),
   router,
   store,
-  apolloProvider: createProvider(),
   render: (h) => h(App),
 }).$mount("#app");

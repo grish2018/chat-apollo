@@ -19,6 +19,9 @@
       />
       <div><p v-if="passwordNotValid">The password field is required</p></div>
       <input type="submit" value="Log In" />
+      <div>
+        <p v-if="unAuthorized" class="error">You are not authenticated</p>
+      </div>
     </form>
   </div>
 </template>
@@ -34,32 +37,40 @@ export default {
       password: "",
       userNotValid: false,
       passwordNotValid: false,
+      unAuthorized: false,
     };
   },
   methods: {
     login() {
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($data: AuthInput!) {
-              auth(input: $data)
-            }
-          `,
-          variables: {
-            data: {
-              login: this.user,
-              password: this.password,
+      if (!this.user.trim() || !this.password.trim()) {
+        return false;
+      } else {
+        this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation($data: AuthInput!) {
+                auth(input: $data)
+              }
+            `,
+            variables: {
+              data: {
+                login: this.user,
+                password: this.password,
+              },
             },
-          },
-        })
-        .then((data) => {
-          console.log(data);
-          onLogin(this.$apollo.provider.defaultClient, data.data.auth);
-          this.$router.push({ name: "profile" });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+          })
+          .then((data) => {
+            console.log(data);
+            onLogin(this.$apollo.provider.defaultClient, data.data.auth);
+            this.$router.push({ name: "profile" });
+          })
+          .catch((e) => {
+            if (e.message) {
+              this.unAuthorized = true;
+            }
+            console.log(e.message);
+          });
+      }
     },
 
     validationTrue() {
@@ -97,13 +108,16 @@ form {
 }
 form input,
 form div {
+  outline: none;
   width: 100%;
-  height: 9%;
+  height: 10%;
   box-sizing: border-box;
+  border-radius: 9px;
 }
 form input[type="submit"] {
   background: rgb(53, 53, 131);
   font-size: 20px;
+  color: white;
 }
 form p {
   color: red;
